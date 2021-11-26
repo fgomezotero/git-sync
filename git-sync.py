@@ -65,11 +65,14 @@ class GitOperations:
 
         :return:
         """
+        print('Path destino: ' + self.path)
         if not is_git_dir(self.path + '/.git'):
             # proceed to clone the repo
+            print('Clonando el repositorio ' + self.repourl)
             Repo.clone_from(self.repourl, self.path, branch=self.branch)
         else:
             # proceed to update the local directory with a last commit
+            print('Haciendo un pull del repositorio ' + self.repourl)
             repo = Repo(self.path)
             self.update(repo)
 
