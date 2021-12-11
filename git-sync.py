@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 import argparse
 from git import Repo
@@ -88,8 +88,6 @@ class GitOperations:
 
 def initialize():
     """ Initialization of GitOperation Class instance and others tasks necessaries
-
-    :return: An instance of GitOperation Class
     """
     try:
         args = check_arg()
@@ -107,7 +105,8 @@ def initialize():
             os.mkdir(git_ope.path, mode=0o777)
             # os.chown(git_ope.path, -1, 0)
 
-        return git_ope
+        git_ope.clone()
+
     except Exception as e:
         print(e.args)
 
@@ -115,8 +114,7 @@ def initialize():
 # for script execution use
 if __name__ == '__main__':
     try:
-        gitinst = initialize()
-        gitinst.clone()
+        initialize()
     except Exception as e:
         print(e.args)
     finally:
