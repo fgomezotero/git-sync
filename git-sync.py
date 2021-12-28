@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-import os
 import argparse
-from git import Repo
+import os
+from urllib.parse import urlparse
+
+from git.repo import Repo
 from git.repo.fun import is_git_dir
 
 
@@ -11,39 +13,51 @@ def check_arg():
     Returns:
         [tupla] -- [Namespaces of the parameters passed to the cli]
     """
-    parse = argparse.ArgumentParser(prog='git-sync',
-                                    usage='%(prog)s [-h|--help] ',
-                                    description='keep sync remote git repo with a local repo',
-                                    epilog='',
-                                    allow_abbrev=False)
-    parse.add_argument('-r', '--remote',
-                       type=str,
-                       help='Remote git repo to sync',
-                       required=True)
-    parse.add_argument('-b', '--branch',
-                       type=str,
-                       help='Branch to sync',
-                       required=True)
-    parse.add_argument('-u', '--username',
-                       type=str,
-                       help='Username to authenticate with remote git repo',
-                       required=True)
-    parse.add_argument('-t', '--token',
-                       type=str,
-                       help='Token to authenticate with remote git repo',
-                       required=True)
-    parse.add_argument('-d', '--dst',
-                       type=str,
-                       help='Directory where local repo will reside',
-                       required=True)
+    parse = argparse.ArgumentParser(
+        prog="git-sync",
+        usage="%(prog)s [-h|--help] ",
+        description="keep sync remote git repo with a local repo",
+        epilog="",
+        allow_abbrev=False,
+    )
+    parse.add_argument(
+        "-r", "--remote", type=str, help="Remote git repo to sync", required=True
+    )
+    parse.add_argument("-b", "--branch", type=str, help="Branch to sync", required=True)
+    parse.add_argument(
+        "-u",
+        "--username",
+        type=str,
+        help="Username to authenticate with remote git repo",
+        required=True,
+    )
+    parse.add_argument(
+        "-t",
+        "--token",
+        type=str,
+        help="Token to authenticate with remote git repo",
+        required=True,
+    )
+    parse.add_argument(
+        "-d",
+        "--dst",
+        type=str,
+        help="Directory where local repo will reside",
+        required=True,
+    )
     args = parse.parse_args()
     return args
 
 
 class GitOperations:
-    """ Class with the operations necessary to clone or update the remote repository with a local directory
     """
-    def __init__(self, repourl, branch, username, token, path):
+    Class with the operations necessary to clone or
+    update the remote repository with a local directory
+    """
+
+    def __init__(
+        self, repourl: str, branch: str, username: str, token: str, path: str
+    ) -> None:
         """Constructor of the class
 
         :param repourl: Remote URL Repository
@@ -52,32 +66,32 @@ class GitOperations:
         :param token: token bellowing to the username param
         :param path: local destinations of the repo in the filesystem
         """
-        split_str = str.split(repourl, sep='/')
-        self.repourl = 'https://' + username + ':' + token + '@'
-        for i in range(2, len(split_str) - 1):
-            self.repourl += split_str[i] + '/'
-        self.repourl += split_str[len(split_str) - 1]
+        urlp = urlparse(repourl)
+        # print(urlp)
+        self.repourl = (
+            urlp.scheme + "://" + username + ":" + token + "@" + urlp.netloc + urlp.path
+        )
         self.branch = branch
         self.path = path
 
     def clone(self):
-        """ Proceed to clone or pull the remote repository depending id the repo exists at path parameter for CLI
+        """Proceed to clone or pull the remote repository depending id the repo exists at path parameter for CLI
 
         :return:
         """
-        print('Path destino: ' + self.path)
-        if not is_git_dir(self.path + '/.git'):
+        print("Path destino: " + self.path)
+        if not is_git_dir(self.path + "/.git"):
             # proceed to clone the repo
-            print('Clonando el repositorio ' + self.repourl)
+            print("Clonando el repositorio " + self.repourl)
             Repo.clone_from(self.repourl, self.path, branch=self.branch)
         else:
             # proceed to update the local directory with a last commit
-            print('Haciendo un pull del repositorio ' + self.repourl)
+            print("Haciendo un pull del repositorio " + self.repourl)
             repo = Repo(self.path)
             self.update(repo)
 
     def update(self, repo):
-        """ Make a pull from the remote repository
+        """Make a pull from the remote repository
 
         :param repo: Instance of Repo Class of GitPython package pointing to local repo
         :return:
@@ -87,8 +101,7 @@ class GitOperations:
 
 
 def initialize():
-    """ Initialization of GitOperation Class instance and others tasks necessaries
-    """
+    """Initialization of GitOperation Class instance and others tasks necessaries"""
     try:
         args = check_arg()
 
@@ -97,7 +110,7 @@ def initialize():
             args.branch,
             args.username,
             args.token,
-            os.path.abspath(args.dst)
+            os.path.abspath(args.dst),
         )
 
         # create the destination directory if not exists
@@ -107,15 +120,15 @@ def initialize():
 
         git_ope.clone()
 
-    except Exception as e:
-        print(e.args)
+    except Exception as error:
+        print(error.args)
 
 
 # for script execution use
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         initialize()
-    except Exception as e:
-        print(e.args)
+    except Exception as error:
+        print(error.args)
     finally:
         print("¡Script finalizado!")
